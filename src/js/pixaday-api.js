@@ -10,28 +10,32 @@ const form = document.querySelector('.form');
 const listImages = document.querySelector('.list');
 form.addEventListener('submit', event => {
   event.preventDefault();
-  return fetch(
-    `https://pixabay.com/api/?key=42464755-f7d199d1a91f6070a7f813e04&image_type=photo&orientation=horizontal&q=${event.target.elements.search.value}&safesearch=true`
-  )
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(response.status);
-      }
-      return response.json();
-    })
-    .then(images => {
-      listImages.innerHTML = '';
-      form.search.value = '';
-      if (images.hits.length === 0) {
-        return iziToast.error({
-          message:
-            'Sorry, there are no images matching your search query. Please try again!',
-          position: 'topRight',
-        });
-      }
-      const markup = images.hits
-        .map(image => {
-          return `<li class="list-item">
+  const loader = document.querySelector('.loader-container');
+  loader.style.display = 'flex';
+  setTimeout(() => (loader.style.display = 'none'), 3000);
+  setTimeout(() => {
+    return fetch(
+      `https://pixabay.com/api/?key=42464755-f7d199d1a91f6070a7f813e04&image_type=photo&orientation=horizontal&q=${event.target.elements.search.value}&safesearch=true`
+    )
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(response.status);
+        }
+        return response.json();
+      })
+      .then(images => {
+        listImages.innerHTML = '';
+        form.search.value = '';
+        if (images.hits.length === 0) {
+          return iziToast.error({
+            message:
+              'Sorry, there are no images matching your search query. Please try again!',
+            position: 'topRight',
+          });
+        }
+        const markup = images.hits
+          .map(image => {
+            return `<li class="list-item">
           <a class="list-link" href="${image.largeImageURL}"><img class="list-img" src="${image.webformatURL}" data-original="${image.largeImageURL}" download></a>
           <ul class="list-statistic">
             <li>
@@ -53,15 +57,16 @@ form.addEventListener('submit', event => {
             </li>
           </ul>
         </li>`;
-        })
-        .join('');
-      listImages.insertAdjacentHTML('beforeend', markup);
-      const originalImageSrc = event.target.getAttribute('data-original');
+          })
+          .join('');
+        listImages.insertAdjacentHTML('beforeend', markup);
+        const originalImageSrc = event.target.getAttribute('data-original');
 
-      const gallery = new SimpleLightbox('.list-link');
-      gallery
-        .refresh()
-        .create(`<img src="${originalImageSrc}" width="100%" height="100%"/>`)
-        .show();
-    });
+        const gallery = new SimpleLightbox('.list-link');
+        gallery
+          .refresh()
+          .create(`<img src="${originalImageSrc}" width="100%" height="100%"/>`)
+          .show();
+      });
+  }, 2000);
 });
