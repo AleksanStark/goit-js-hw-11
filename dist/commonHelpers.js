@@ -29,12 +29,8 @@ import { S as u, i as m } from '../assets/vendor-5b791d57.js';
     fetch(e.href, s);
   }
 })();
-const p = i =>
-    fetch(
-      `https://pixabay.com/api/?key=42464755-f7d199d1a91f6070a7f813e04&image_type=photo&orientation=horizontal&q=${i}&safesearch=true`
-    ),
-  d = new u('.list-link'),
-  f = (i, t) => {
+const p = new u('.list-link'),
+  d = (i, t) => {
     const l = i
       .map(
         r => `<li class="list-item">
@@ -61,30 +57,32 @@ const p = i =>
           </li>`
       )
       .join('');
-    t.insertAdjacentHTML('beforeend', l), d.refresh();
+    t.insertAdjacentHTML('beforeend', l), p.refresh();
   },
+  f = i =>
+    fetch(
+      `https://pixabay.com/api/?key=42464755-f7d199d1a91f6070a7f813e04&image_type=photo&orientation=horizontal&q=${i}&safesearch=true`
+    ).then(t => {
+      if (t.ok) return t.json();
+      throw new Error(t.status);
+    }),
   o = document.querySelector('.form'),
   a = document.querySelector('.list'),
   c = document.querySelector('.loader-container');
 o.addEventListener('submit', i => {
   i.preventDefault(),
     (c.style.display = 'flex'),
-    p(i.target.elements.search.value)
-      .then(t => {
-        if (t.ok) return t.json();
-        throw new Error(t.status);
-      })
-      .then(t => {
-        t.hits.length === 0 &&
-          m.error({
-            message:
-              'Sorry, there are no images matching your search query. Please try again!',
-            position: 'topRight',
-          }),
-          (o.search.value = ''),
-          (a.innerHTML = ''),
-          f(t.hits, a),
-          (c.style.display = 'none');
-      });
+    f(i.target.elements.search.value).then(t => {
+      t.hits.length === 0 &&
+        m.error({
+          message:
+            'Sorry, there are no images matching your search query. Please try again!',
+          position: 'topRight',
+        }),
+        (o.search.value = ''),
+        (a.innerHTML = ''),
+        d(t.hits, a),
+        (c.style.display = 'none');
+    });
 });
 //# sourceMappingURL=commonHelpers.js.map
